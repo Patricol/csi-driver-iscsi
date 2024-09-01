@@ -40,13 +40,27 @@ func getISCSIInfo(req *csi.NodePublishVolumeRequest) (*iscsiDisk, error) {
 
 	secretParams := req.GetVolumeContext()["secret"]
 	secret := parseSecret(secretParams)
-	sessionSecret, err := parseSessionSecret(secret)
-	if err != nil {
-		return nil, err
+
+	chapDiscovery := false
+	if req.GetVolumeContext()["discoveryCHAPAuth"] == "true" {
+		chapDiscovery = true
 	}
 	discoverySecret, err := parseDiscoverySecret(secret)
 	if err != nil {
-		return nil, err
+	  if chapDiscovery {
+		  return nil, err
+	  }
+	}
+
+	chapSession := false
+	if req.GetVolumeContext()["sessionCHAPAuth"] == "true" {
+		chapSession = true
+	}
+	sessionSecret, err := parseSessionSecret(secret)
+	if err != nil {
+	  if chapSession {
+		  return nil, err
+	  }
 	}
 
 	bkportal := []string{}
@@ -67,15 +81,6 @@ func getISCSIInfo(req *csi.NodePublishVolumeRequest) (*iscsiDisk, error) {
 
 	iface := req.GetVolumeContext()["iscsiInterface"]
 	initiatorName := req.GetVolumeContext()["initiatorName"]
-	chapDiscovery := false
-	if req.GetVolumeContext()["discoveryCHAPAuth"] == "true" {
-		chapDiscovery = true
-	}
-
-	chapSession := false
-	if req.GetVolumeContext()["sessionCHAPAuth"] == "true" {
-		chapSession = true
-	}
 
 	var lunVal int32
 	if lun != "" {
