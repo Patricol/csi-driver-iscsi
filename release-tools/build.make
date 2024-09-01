@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # force the usage of /bin/bash instead of /bin/sh
-SHELL := /bin/bash
+SHELL := /usr/bin/env bash
 
 .PHONY: build-% build container-% container push-% push clean test
 

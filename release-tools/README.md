@@ -81,7 +81,7 @@ A repo that wants to opt into testing via Prow must set up a top-level
 control to it:
 
 ``` bash
-#! /bin/bash -e
+#!/usr/bin/env bash -e
 
 . release-tools/prow.sh
 main
