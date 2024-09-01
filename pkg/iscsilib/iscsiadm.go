@@ -103,7 +103,7 @@ func CreateDBEntry(tgtIQN, portal, iFace string, discoverySecrets, sessionSecret
 // Discoverydb discovers the iscsi target
 func Discoverydb(tp, iface string, discoverySecrets Secrets, chapDiscovery bool) error {
 	klog.V(2).Infof("Begin Discoverydb...")
-	baseArgs := []string{"-m", "discoverydb", "-t", "sendtargets", "-p", tp, "-I", iface}
+	baseArgs := []string{"-m", "discoverydb", "--discover", "-t", "sendtargets", "-p", tp, "-I", iface}
 	out, err := iscsiCmd(append(baseArgs, []string{"-o", "new"}...)...)
 	if err != nil {
 		return fmt.Errorf("failed to create new entry of target in discoverydb, output: %v, err: %v", out, err)
