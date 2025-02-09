@@ -35,7 +35,6 @@
 
           # Add any shell logic you want executed any time the environment is activated
           shellHook = ''
-            ln -sfn
             alias make-container="make push REGISTRY_NAME=patricol IMAGE_TAGS=canary"
           '';
           # NOTE: mount_linux.go is here: https://github.com/kubernetes/mount-utils/blob/master/mount_linux.go
