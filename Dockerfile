@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM registry.k8s.io/build-image/debian-base:bookworm-v1.0.4
+FROM registry.k8s.io/build-image/debian-base:bookworm-v1.0.6
 
 RUN apt update && apt upgrade -y && apt-mark unhold libcap2
 RUN clean-install util-linux e2fsprogs mount ca-certificates udev xfsprogs btrfs-progs open-iscsi
 
 CMD service iscsid start
-COPY ./bin/iscsiplugin /iscsiplugin
+ARG ARCH
+ARG binary=./bin/${ARCH}/iscsiplugin
+COPY ${binary} /iscsiplugin
 
 ENTRYPOINT ["/iscsiplugin"]

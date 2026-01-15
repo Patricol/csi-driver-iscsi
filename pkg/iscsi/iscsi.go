@@ -41,10 +41,7 @@ func getISCSIInfo(req *csi.NodePublishVolumeRequest) (*iscsiDisk, error) {
 	secretParams := req.GetVolumeContext()["secret"]
 	secret := parseSecret(secretParams)
 
-	chapDiscovery := false
-	if req.GetVolumeContext()["discoveryCHAPAuth"] == "true" {
-		chapDiscovery = true
-	}
+	chapDiscovery := req.GetVolumeContext()["discoveryCHAPAuth"] == "true"
 	discoverySecret, err := parseDiscoverySecret(secret)
 	if err != nil {
 	  if chapDiscovery {
@@ -52,10 +49,7 @@ func getISCSIInfo(req *csi.NodePublishVolumeRequest) (*iscsiDisk, error) {
 	  }
 	}
 
-	chapSession := false
-	if req.GetVolumeContext()["sessionCHAPAuth"] == "true" {
-		chapSession = true
-	}
+	chapSession := req.GetVolumeContext()["sessionCHAPAuth"] == "true"
 	sessionSecret, err := parseSessionSecret(secret)
 	if err != nil {
 	  if chapSession {
@@ -82,6 +76,8 @@ func getISCSIInfo(req *csi.NodePublishVolumeRequest) (*iscsiDisk, error) {
 	iface := req.GetVolumeContext()["iscsiInterface"]
 	initiatorName := req.GetVolumeContext()["initiatorName"]
 
+	doDiscovery := req.GetVolumeContext()["discovery"] == "true"
+
 	var lunVal int32
 	if lun != "" {
 		l, err := strconv.Atoi(lun)
@@ -90,12 +86,14 @@ func getISCSIInfo(req *csi.NodePublishVolumeRequest) (*iscsiDisk, error) {
 		}
 		lunVal = int32(l)
 	}
+
 	iscsiDisk := &iscsiDisk{
 		VolName:         volName,
 		Portals:         bkportal,
 		Iqn:             iqn,
 		lun:             lunVal,
 		Iface:           iface,
+		discovery:       doDiscovery,
 		chapDiscovery:   chapDiscovery,
 		chapSession:     chapSession,
 		secret:          secret,
@@ -116,6 +114,7 @@ func buildISCSIConnector(iscsiInfo *iscsiDisk) *iscsiLib.Connector {
 		TargetIqn:        iscsiInfo.Iqn,
 		TargetPortals:    iscsiInfo.Portals,
 		Lun:              iscsiInfo.lun,
+		DoDiscovery:      iscsiInfo.discovery,
 		DoCHAPDiscovery:  iscsiInfo.chapDiscovery,
 		DiscoverySecrets: iscsiInfo.discoverySecret,
 		SessionSecrets:   iscsiInfo.sessionSecret,
@@ -235,6 +234,7 @@ type iscsiDisk struct {
 	Iqn             string
 	lun             int32
 	Iface           string
+	discovery       bool
 	chapDiscovery   bool
 	chapSession     bool
 	secret          map[string]string
